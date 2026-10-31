@@ -2,18 +2,36 @@
 
 void Application::Run()
 {
-	//InitVulkan();
+	InitWindow();
+	
+	InitVulkan();
 	
 	MainLoop();
 
-	//CleanUp();
+	CleanUp();
+}
+
+void Application::InitWindow()
+{
+	m_Window = std::make_unique<Window>();
+}
+
+void Application::InitVulkan()
+{
+	m_VulkanInstance = std::make_unique<VulkanInstance>();
 }
 
 
 void Application::MainLoop()
 {
-	while (!glfwWindowShouldClose(m_Window.GetNativeWindow()))
+	while (!glfwWindowShouldClose(m_Window->GetNativeWindow()))
 	{
 		glfwPollEvents();
 	}
+}
+
+void Application::CleanUp()
+{
+	m_VulkanInstance.reset();
+	m_Window.reset();
 }

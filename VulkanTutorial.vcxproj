@@ -67,11 +67,13 @@
     <ClCompile Include="Application\Application.cpp" />
     <ClInclude Include="Application\Application.h" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="VulkanInstance.cpp" />
+    <ClCompile Include="Vulkan\VulkanInstance.cpp" />
+    <ClCompile Include="Vulkan\VulkanUtils.cpp" />
     <ClCompile Include="Window\Window.cpp" />
+    <ClInclude Include="Vulkan\VulkanUtils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="VulkanInstance.h" />
+    <ClInclude Include="Vulkan\VulkanInstance.h" />
     <ClInclude Include="Window\Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
