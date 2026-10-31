@@ -3,8 +3,10 @@
 
 std::vector<const char*> VulkanUtils::GetRequiredInstanceExtensions()
 {
+	// GLFW
 	uint32_t glfwExtensionCount = 0;
 	const char** extentionNames=glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
 	if (!extentionNames)
 	{
 		throw std::runtime_error("无法获取 GLFW 所需扩展");
@@ -16,6 +18,9 @@ std::vector<const char*> VulkanUtils::GetRequiredInstanceExtensions()
 	{
 		extensions.push_back(extentionNames[i]);
 	}
+
+	// DebugUtils
+	extensions.push_back(vk::EXTDebugUtilsExtensionName);
 
 	return extensions;
 }

@@ -1,13 +1,46 @@
 #include "VulkanInstance.h"
 #include"VulkanUtils.h"
+#include <iostream>
+
+namespace
+{
+    /**
+     * @brief 验证层配置信息
+     */
+    constexpr std::array<const char*, 1> requiredValidationLayers = {
+        "VK_LAYER_KHRONOS_validation"
+    };
+
+#ifdef NDEBUG
+    constexpr bool enableValidationLayers = false;
+#else
+    constexpr bool enableValidationLayers = true;
+#endif
+
+    // 回调函数
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+        VkDebugUtilsMessageTypeFlagsEXT type,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,void* pUserData)
+    {
+        std::cerr << "验证层：类型 "
+            << vk::to_string(vk::DebugUtilsMessageTypeFlagsEXT{ type })
+            << "，消息：" << pCallbackData->pMessage << '\n';
+
+        return VK_FALSE;
+    }
+}
 
 VulkanInstance::VulkanInstance()
 {
-    // 获取所需扩展
+    // 扩展
     std::vector<const char*> requiredExtensions=VulkanUtils::GetRequiredInstanceExtensions();
-
-    // 比较这些所需扩展是否受支持
     CheckInstanceExtensions(requiredExtensions);
+
+    // 验证层
+    if(enableValidationLayers)
+        CheckValidationLayers(requiredValidationLayers);
+
 
     // 创建Vulkan实例
     vk::ApplicationInfo appInfo{};
@@ -22,8 +55,38 @@ VulkanInstance::VulkanInstance()
     createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
+    if (enableValidationLayers)
+    {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(requiredValidationLayers.size());
+        createInfo.ppEnabledLayerNames = requiredValidationLayers.data();
+    }
+
 
     m_Instance = vk::raii::Instance(m_Context, createInfo);
+
+    // 设置调试信使
+    SetupDebugMessenger();
+}
+
+void VulkanInstance::SetupDebugMessenger()
+{
+    if (!enableValidationLayers) 
+        return;
+
+    // 严重级别
+    vk::DebugUtilsMessageSeverityFlagsEXT severityFlags(vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
+    // 类型
+    vk::DebugUtilsMessageTypeFlagsEXT messageTypeFlags(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation);
+    
+    // 创建信息
+    vk::DebugUtilsMessengerCreateInfoEXT createInfo{};
+
+    createInfo.messageSeverity = severityFlags;
+    createInfo.messageType = messageTypeFlags;
+    createInfo.pfnUserCallback = &debugCallback;
+
+    // 创建调试消息器
+    m_DebugMessenger = m_Instance.createDebugUtilsMessengerEXT(createInfo); 
 }
 
 void VulkanInstance::CheckInstanceExtensions(const std::vector<const char*>& requiredExtensions)
@@ -54,4 +117,31 @@ void VulkanInstance::CheckInstanceExtensions(const std::vector<const char*>& req
      }
 
 
+}
+
+void VulkanInstance::CheckValidationLayers(const std::array<const char*, 1>& requiredLayers)
+{
+    const auto layerProperties =
+        m_Context.enumerateInstanceLayerProperties();
+
+    for (const char* required : requiredLayers)
+    {
+        bool found = false;
+
+        for (const auto& property : layerProperties)
+        {
+            const char* supported = property.layerName.data();
+
+            if (std::strcmp(supported, required) == 0)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            throw std::runtime_error(std::string("所需验证层不可用：") + required);
+        }
+    }
 }
