@@ -8,5 +8,8 @@ VulkanBackend::VulkanBackend()
     m_Instance = std::make_unique<VulkanInstance>(m_Context);
 
     // 创建物理设备
-    m_physicalDevice = std::make_unique<PhysicalDevice>( m_Instance->GetInstance());
+    m_PhysicalDevice = std::make_unique<PhysicalDevice>( m_Instance->GetInstance());
+
+    // 创建逻辑设备
+    m_LogicalDevice = std::make_unique<LogicalDevice>(m_PhysicalDevice->GetDevice());
 }

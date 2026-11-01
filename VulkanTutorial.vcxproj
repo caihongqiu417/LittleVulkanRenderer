@@ -67,11 +67,13 @@
     <ClCompile Include="Application\Application.cpp" />
     <ClInclude Include="Application\Application.h" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Vulkan\LogicalDevice.cpp" />
     <ClCompile Include="Vulkan\PhysicalDevice.cpp" />
     <ClCompile Include="Vulkan\VulkanBackend.cpp" />
     <ClCompile Include="Vulkan\VulkanInstance.cpp" />
     <ClCompile Include="Vulkan\VulkanUtils.cpp" />
     <ClCompile Include="Window\Window.cpp" />
+    <ClInclude Include="Vulkan\LogicalDevice.h" />
     <ClInclude Include="Vulkan\PhysicalDevice.h" />
     <ClInclude Include="Vulkan\VulkanBackend.h" />
     <ClInclude Include="Vulkan\VulkanUtils.h" />

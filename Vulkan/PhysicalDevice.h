@@ -9,6 +9,8 @@ class PhysicalDevice
 public:
 	PhysicalDevice(const vk::raii::Instance& instance);
 
+	const vk::raii::PhysicalDevice& GetDevice() { return m_PhysicalDevice; }
+
 private:
 	// 选择合适的一块显卡
 	vk::raii::PhysicalDevice PickPhysicalDevice(const vk::raii::Instance& instance);

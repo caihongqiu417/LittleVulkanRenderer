@@ -3,6 +3,7 @@
 #include<vulkan/vulkan_raii.hpp>
 #include"VulkanInstance.h"
 #include"PhysicalDevice.h"
+#include"LogicalDevice.h"
 
 /**
  * @brief 管理 Vulkan 对象的初始化顺序和生命周期
@@ -17,5 +18,6 @@ public:
 private:
 	vk::raii::Context m_Context;
 	std::unique_ptr<VulkanInstance> m_Instance;
-	std::unique_ptr<PhysicalDevice> m_physicalDevice;
+	std::unique_ptr<PhysicalDevice> m_PhysicalDevice;
+	std::unique_ptr<LogicalDevice> m_LogicalDevice;
 };

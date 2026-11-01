@@ -36,6 +36,9 @@
     <ClCompile Include="Vulkan\PhysicalDevice.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Vulkan\LogicalDevice.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vulkan\VulkanInstance.h">
@@ -54,6 +57,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Vulkan\VulkanBackend.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\LogicalDevice.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

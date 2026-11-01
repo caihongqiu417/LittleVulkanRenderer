@@ -78,11 +78,7 @@ bool PhysicalDevice::isDeviceSuitable(const vk::raii::PhysicalDevice& device)
         std::ranges::all_of(requiredDeviceExtension, isSupported);
 
     // 4. 检查所需功能
-    const auto features = device.getFeatures2<
-        vk::PhysicalDeviceFeatures2,
-        vk::PhysicalDeviceVulkan11Features,
-        vk::PhysicalDeviceVulkan13Features,
-        vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>();
+    const auto features = device.getFeatures2<vk::PhysicalDeviceFeatures2,vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan13Features,vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>();
 
     bool supportRequiredFeatures =
         features.get<vk::PhysicalDeviceVulkan11Features>().shaderDrawParameters /* 查询结构体字段 */ &&
