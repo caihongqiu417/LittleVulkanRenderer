@@ -1,13 +1,15 @@
 #include "VulkanInstance.h"
-#include"VulkanUtils.h"
+#include "VulkanUtils.h"
+
+#include <cstring>
 #include <iostream>
+#include <stdexcept>
+#include <string>
 
 namespace
 {
-    /**
-     * @brief ÑéÖ¤²ãÅäÖÃĞÅÏ¢
-     */
-    constexpr std::array<const char*, 1> requiredValidationLayers = {
+    // éªŒè¯å±‚é…ç½®ï¼Œä»…å½“å‰æ–‡ä»¶ä½¿ç”¨
+    constexpr std::array<const char*, 1> requiredValidationLayers{
         "VK_LAYER_KHRONOS_validation"
     };
 
@@ -17,122 +19,99 @@ namespace
     constexpr bool enableValidationLayers = true;
 #endif
 
-    // »Øµ÷º¯Êı
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+    // å›è°ƒ
+    VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT /*severity*/,
         VkDebugUtilsMessageTypeFlagsEXT type,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,void* pUserData)
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* /*pUserData*/)
     {
-        std::cerr << "ÑéÖ¤²ã£ºÀàĞÍ "
-            << vk::to_string(vk::DebugUtilsMessageTypeFlagsEXT{ type })
-            << "£¬ÏûÏ¢£º" << pCallbackData->pMessage << '\n';
+        std::cerr << "éªŒè¯å±‚ï¼šç±»å‹ "
+                  << vk::to_string(vk::DebugUtilsMessageTypeFlagsEXT{type})
+                  << "ï¼Œæ¶ˆæ¯ï¼š" << pCallbackData->pMessage << '\n';
 
         return VK_FALSE;
     }
 }
 
-VulkanInstance::VulkanInstance()
+VulkanInstance::VulkanInstance(vk::raii::Context& context)
+    : m_Context(context)
 {
-    // À©Õ¹
-    std::vector<const char*> requiredExtensions=VulkanUtils::GetRequiredInstanceExtensions();
+    //æŸ¥è¯¢å¹¶æ£€æŸ¥æ‰©å±•ã€éªŒè¯å±‚ï¼Œé…ç½®å¹¶åˆ›å»ºå®ä¾‹
+    ConfigureAndCreateInstance();
+
+    SetupDebugMessenger();
+}
+
+void VulkanInstance::ConfigureAndCreateInstance()
+{
+    // æ£€æŸ¥æ‰©å±•
+    const auto requiredExtensions =
+        VulkanUtils::GetRequiredInstanceExtensions();
     CheckInstanceExtensions(requiredExtensions);
 
-    // ÑéÖ¤²ã
-    if(enableValidationLayers)
+    // æ£€æŸ¥éªŒè¯å±‚
+    if (enableValidationLayers)
+    {
         CheckValidationLayers(requiredValidationLayers);
+    }
 
-
-    // ´´½¨VulkanÊµÀı
+    // åˆ›å»ºå®ä¾‹
     vk::ApplicationInfo appInfo{};
     appInfo.pApplicationName = "Hello Triangle";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.apiVersion = VK_API_VERSION_1_3;
 
     vk::InstanceCreateInfo createInfo{};
     createInfo.pApplicationInfo = &appInfo;
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
+    createInfo.enabledExtensionCount =
+        static_cast<uint32_t>(requiredExtensions.size());
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
     if (enableValidationLayers)
     {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(requiredValidationLayers.size());
+        createInfo.enabledLayerCount =
+            static_cast<uint32_t>(requiredValidationLayers.size());
         createInfo.ppEnabledLayerNames = requiredValidationLayers.data();
     }
 
-
     m_Instance = vk::raii::Instance(m_Context, createInfo);
-
-    // ÉèÖÃµ÷ÊÔĞÅÊ¹
-    SetupDebugMessenger();
 }
 
 void VulkanInstance::SetupDebugMessenger()
 {
-    if (!enableValidationLayers) 
+    if (!enableValidationLayers)
+    {
         return;
+    }
 
-    // ÑÏÖØ¼¶±ğ
-    vk::DebugUtilsMessageSeverityFlagsEXT severityFlags(vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
-    // ÀàĞÍ
-    vk::DebugUtilsMessageTypeFlagsEXT messageTypeFlags(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation);
-    
-    // ´´½¨ĞÅÏ¢
     vk::DebugUtilsMessengerCreateInfoEXT createInfo{};
-
-    createInfo.messageSeverity = severityFlags;
-    createInfo.messageType = messageTypeFlags;
+    createInfo.messageSeverity =
+        vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+        vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
+    createInfo.messageType =
+        vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
+        vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
     createInfo.pfnUserCallback = &debugCallback;
 
-    // ´´½¨µ÷ÊÔÏûÏ¢Æ÷
-    m_DebugMessenger = m_Instance.createDebugUtilsMessengerEXT(createInfo); 
+    m_DebugMessenger = m_Instance.createDebugUtilsMessengerEXT(createInfo);
 }
 
-void VulkanInstance::CheckInstanceExtensions(const std::vector<const char*>& requiredExtensions)
+void VulkanInstance::CheckInstanceExtensions(
+    const std::vector<const char*>& requiredExtensions) const
 {
-    
-     std::vector<vk::ExtensionProperties> extensionProperties=m_Context.enumerateInstanceExtensionProperties();
-     // extensionProperties£º Ö§³ÖÁĞ±í
-     // extensionProperties[0]£ºµÚÒ»¸öÖ§³ÖµÄÀ©Õ¹µÄÊôĞÔ
-     // extensionProperties[0].extensionName£º¸ÃÀ©Õ¹Ãû³ÆµÄ×Ö·ûÊı×é
+    const auto extensionProperties =
+        m_Context.enumerateInstanceExtensionProperties();
 
-     for (const char* required : requiredExtensions)    // ¶ÔÓÚÃ¿¸öËùĞèµÄÀ©Õ¹,¶¼ÔÚÖ§³ÖÁĞ±íÀïÕÒÒ»±é
-     {
-         bool found = false;
-         for (const vk::ExtensionProperties& property : extensionProperties)
-         {
-             const char* supported = property.extensionName.data();
-             if (std::strcmp(required, supported) == 0)
-             {
-                 found = true;
-                 break;
-             }
-         }
-
-         if (found == false)
-         {
-             throw(std::runtime_error(std::string("²»Ö§³Ö¸ÃËùĞèÀ©Õ¹") + std::string(required)));
-         }
-     }
-
-
-}
-
-void VulkanInstance::CheckValidationLayers(const std::array<const char*, 1>& requiredLayers)
-{
-    const auto layerProperties =
-        m_Context.enumerateInstanceLayerProperties();
-
-    for (const char* required : requiredLayers)
+    for (const char* required : requiredExtensions)
     {
         bool found = false;
-
-        for (const auto& property : layerProperties)
+        for (const auto& property : extensionProperties)
         {
-            const char* supported = property.layerName.data();
-
-            if (std::strcmp(supported, required) == 0)
+            if (std::strcmp(required, property.extensionName.data()) == 0)
             {
                 found = true;
                 break;
@@ -141,7 +120,31 @@ void VulkanInstance::CheckValidationLayers(const std::array<const char*, 1>& req
 
         if (!found)
         {
-            throw std::runtime_error(std::string("ËùĞèÑéÖ¤²ã²»¿ÉÓÃ£º") + required);
+            throw std::runtime_error(std::string("æ‰€éœ€å®ä¾‹æ‰©å±•ä¸å¯ç”¨ï¼š") + required);
+        }
+    }
+}
+
+void VulkanInstance::CheckValidationLayers(
+    const std::array<const char*, 1>& requiredLayers) const
+{
+    const auto layerProperties = m_Context.enumerateInstanceLayerProperties();
+
+    for (const char* required : requiredLayers)
+    {
+        bool found = false;
+        for (const auto& property : layerProperties)
+        {
+            if (std::strcmp(required, property.layerName.data()) == 0)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            throw std::runtime_error(std::string("æ‰€éœ€éªŒè¯å±‚ä¸å¯ç”¨ï¼š") + required);
         }
     }
 }

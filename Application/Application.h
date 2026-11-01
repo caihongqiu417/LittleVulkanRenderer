@@ -4,7 +4,7 @@
 #pragma once
 #include<memory>
 #include "../Window/window.h"
-#include"../Vulkan/VulkanInstance.h"
+#include"../Vulkan/VulkanBackend.h"
 
 class Application
 {
@@ -29,5 +29,5 @@ private:
 private:
 	std::unique_ptr<Window> m_Window;
 
-	std::unique_ptr<VulkanInstance> m_VulkanInstance;
+	std::unique_ptr<VulkanBackend> m_vkBackend;
 };
